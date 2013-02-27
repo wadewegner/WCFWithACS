@@ -13,8 +13,7 @@ namespace WCFClient
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Enter a string to reverse, then press <ENTER>");
-            int userInputString = Convert.ToInt32(Console.ReadLine());
+            int userInputString = 1;
             Console.WriteLine();
 
             string acsUsernameEndpoint = String.Format("https://{0}.{1}/v2/wstrust/13/username", AccessControlNamespace, AccessControlHostName);
@@ -56,6 +55,7 @@ namespace WCFClient
             ChannelFactory<IService1> stringServiceFactory = new ChannelFactory<IService1>(Bindings.CreateServiceBinding(acsEndpoint), serviceEndpointAddress);
 
             // Set the service credentials and disable certificate validation to work with sample certificates
+            stringServiceFactory.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.None;
             stringServiceFactory.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.None;
             stringServiceFactory.Credentials.ServiceCertificate.DefaultCertificate = GetServiceCertificate();
 

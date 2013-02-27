@@ -20,7 +20,6 @@ namespace WCFServiceWebRole
             //for maximum
             //reuse value outside of the IIS/WAS hosting environment.
 
-
             return new CustomServiceHost(serviceType, baseAddresses);
         }
     }

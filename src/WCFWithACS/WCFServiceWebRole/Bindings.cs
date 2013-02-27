@@ -8,7 +8,9 @@ namespace WCFServiceWebRole
     {
         public static Binding CreateServiceBinding(string acsCertificateEndpoint)
         {
-            return new IssuedTokenWSTrustBinding(CreateAcsCertificateBinding(), new EndpointAddress(acsCertificateEndpoint));
+            var binding = new IssuedTokenWSTrustBinding(CreateAcsCertificateBinding(), new EndpointAddress(acsCertificateEndpoint));
+
+            return binding;
         }
 
         public static Binding CreateAcsCertificateBinding()
