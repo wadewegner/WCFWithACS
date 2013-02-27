@@ -17,6 +17,21 @@ namespace WCFServiceWebRole
 {
     public class CustomServiceHost : ServiceHost
     {
+        //Overriding ApplyConfiguration() allows us to 
+        //alter the ServiceDescription prior to opening
+        //the service host. 
+        //protected override void ApplyConfiguration()
+        //{
+        //    //First, we call base.ApplyConfiguration()
+        //    //to read any configuration that was provided for
+        //    //the service we're hosting. After this call,
+        //    //this.Description describes the service
+        //    //as it was configured.
+        //    base.ApplyConfiguration();
+
+        //    //(rest of implementation elided for clarity)
+        //}
+
         static string AccessControlHostName = ConfigurationManager.AppSettings.Get("AccessControlHostName");
         static string AccessControlNamespace = ConfigurationManager.AppSettings.Get("AccessControlNamespace");
         static string AccessControlSigningCertificateFilePath = ConfigurationManager.AppSettings.Get("AccessControlSigningCertificateFilePath");
@@ -24,97 +39,36 @@ namespace WCFServiceWebRole
         static string ServiceCertificateFilePath = ConfigurationManager.AppSettings.Get("ServiceCertificateFilePath");
         static string ServiceCertificatePassword = ConfigurationManager.AppSettings.Get("ServiceCertificatePassword");
 
-        private static X509Certificate2 GetAcsSigningCertificate()
+        public CustomServiceHost()
         {
-            return new X509Certificate2(AccessControlSigningCertificateFilePath);
+        }
+
+        public CustomServiceHost(Type serviceType, params Uri[] baseAddresses)
+            : base(serviceType, baseAddresses)
+        {
+        }
+
+
+        protected override void ApplyConfiguration()
+        {
+            base.ApplyConfiguration(); 
+
+            //this.Credentials.ServiceCertificate.Certificate = new CertificateFinder(Settings.ServiceCertificateThumbprint).GetCertificate();
+            this.Credentials.ServiceCertificate.Certificate = GetServiceCertificateWithPrivateKey();
+
+            
+            //this.AddServiceEndpoint(typeof(Service1), Bindings.CreateServiceBinding(Settings.AcsUserNameEndPoint, Settings.ServiceAddress), Settings.ServiceAddress);
+            string acsUsernameEndpoint = String.Format("https://{0}.{1}/v2/wstrust/13/username", AccessControlNamespace, AccessControlHostName);
+            this.AddServiceEndpoint(typeof(IService1),
+                                       Bindings.CreateServiceBinding(acsUsernameEndpoint),
+                                       ServiceAddress);
+
         }
 
         private static X509Certificate2 GetServiceCertificateWithPrivateKey()
         {
             return new X509Certificate2(ServiceCertificateFilePath, ServiceCertificatePassword);
         }
-
-        public CustomServiceHost(Type serviceType, params Uri[] baseAddresses)
-            : base(serviceType, baseAddresses)
-        {
-
-            string acsUsernameEndpoint = String.Format("https://{0}.{1}/v2/wstrust/13/username", AccessControlNamespace, AccessControlHostName);
-
-            ServiceHost rpHost = new ServiceHost(typeof(Service1));
-
-            rpHost.Credentials.ServiceCertificate.Certificate = GetServiceCertificateWithPrivateKey();
-
-            rpHost.AddServiceEndpoint(typeof(IService1),
-                                       Bindings.CreateServiceBinding(acsUsernameEndpoint),
-                                       ServiceAddress);
-
-            //
-            // This must be called after all WCF settings are set on the service host so the
-            // Windows Identity Foundation token handlers can pick up the relevant settings.
-            //
-            ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
-            serviceConfiguration.CertificateValidationMode = X509CertificateValidationMode.None;
-
-            // Accept ACS signing certificate as Issuer.
-            serviceConfiguration.IssuerNameRegistry = new X509IssuerNameRegistry(GetAcsSigningCertificate().SubjectName.Name);
-
-            // Add the SAML 2.0 token handler.
-            serviceConfiguration.SecurityTokenHandlers.AddOrReplace(new Saml2SecurityTokenHandler());
-
-            // Add the address of this service to the allowed audiences.
-            serviceConfiguration.SecurityTokenHandlers.Configuration.AudienceRestriction.AllowedAudienceUris.Add(new Uri(ServiceAddress));
-
-            FederatedServiceCredentials.ConfigureServiceHost(rpHost, serviceConfiguration);
-
-        }
-
-        //private static ServiceHost CreateWcfServiceHost()
-        //{
-        //    string acsUsernameEndpoint = String.Format("https://{0}.{1}/v2/wstrust/13/username", AccessControlNamespace, AccessControlHostName);
-
-        //    ServiceHost rpHost = new ServiceHost(typeof(Service1));
-
-        //    rpHost.Credentials.ServiceCertificate.Certificate = GetServiceCertificateWithPrivateKey();
-
-        //    rpHost.AddServiceEndpoint(typeof(IService1),
-        //                               Bindings.CreateServiceBinding(acsUsernameEndpoint),
-        //                               ServiceAddress);
-
-        //    //
-        //    // This must be called after all WCF settings are set on the service host so the
-        //    // Windows Identity Foundation token handlers can pick up the relevant settings.
-        //    //
-        //    ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
-        //    serviceConfiguration.CertificateValidationMode = X509CertificateValidationMode.None;
-
-        //    // Accept ACS signing certificate as Issuer.
-        //    serviceConfiguration.IssuerNameRegistry = new X509IssuerNameRegistry(GetAcsSigningCertificate().SubjectName.Name);
-
-        //    // Add the SAML 2.0 token handler.
-        //    serviceConfiguration.SecurityTokenHandlers.AddOrReplace(new Saml2SecurityTokenHandler());
-
-        //    // Add the address of this service to the allowed audiences.
-        //    serviceConfiguration.SecurityTokenHandlers.Configuration.AudienceRestriction.AllowedAudienceUris.Add(new Uri(ServiceAddress));
-
-        //    FederatedServiceCredentials.ConfigureServiceHost(rpHost, serviceConfiguration);
-
-        //    return rpHost;
-        //}
-
-
-        //Overriding ApplyConfiguration() allows us to 
-        //alter the ServiceDescription prior to opening
-        //the service host. 
-        protected override void ApplyConfiguration()
-        {
-            //First, we call base.ApplyConfiguration()
-            //to read any configuration that was provided for
-            //the service we're hosting. After this call,
-            //this.Description describes the service
-            //as it was configured.
-            base.ApplyConfiguration();
-
-            //(rest of implementation elided for clarity)
-        }
     }
+
 }

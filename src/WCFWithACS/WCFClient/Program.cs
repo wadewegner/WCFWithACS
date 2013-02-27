@@ -42,7 +42,6 @@ namespace WCFClient
         static string ClientCertificateFilePath = ConfigurationManager.AppSettings.Get("ClientCertificateFilePath");
         static string ClientCertificatePassword = ConfigurationManager.AppSettings.Get("ClientCertificatePassword");
 
-
         private static ChannelFactory<IService1> CreateChannelFactory(string acsEndpoint, string serviceEndpoint)
         {
             //
