@@ -67,9 +67,9 @@ namespace WCFServiceWebRole
                                        ServiceAddress);
 
             // disable validation?
-            //this.Credentials.IssuedTokenAuthentication.CertificateValidationMode = X509CertificateValidationMode.None;
-            //this.Credentials.IssuedTokenAuthentication.RevocationMode = X509RevocationMode.NoCheck;
- 
+            this.Credentials.IssuedTokenAuthentication.CertificateValidationMode = X509CertificateValidationMode.None;
+            this.Credentials.IssuedTokenAuthentication.RevocationMode = X509RevocationMode.NoCheck;
+
             //
             // This must be called after all WCF settings are set on the service host so the
             // Windows Identity Foundation token handlers can pick up the relevant settings.

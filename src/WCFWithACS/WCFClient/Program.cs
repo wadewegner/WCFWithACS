@@ -53,14 +53,15 @@ namespace WCFClient
                                                                           new AddressHeaderCollection());
 
             ChannelFactory<IService1> stringServiceFactory = new ChannelFactory<IService1>(Bindings.CreateServiceBinding(acsEndpoint), serviceEndpointAddress);
-
+            
             // Set the service credentials and disable certificate validation to work with sample certificates
-            stringServiceFactory.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.None;
             stringServiceFactory.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.None;
             stringServiceFactory.Credentials.ServiceCertificate.DefaultCertificate = GetServiceCertificate();
 
             // Set the client credentials.
             stringServiceFactory.Credentials.ClientCertificate.Certificate = GetClientCertificateWithPrivateKey();
+
+
 
 
             return stringServiceFactory;
